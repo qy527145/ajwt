@@ -1,20 +1,25 @@
 [project]
 name = "ajwt"
-version = "0.2.2"
-description = "Add your description here"
+version = "0.3.0"
+description = "Advanced JWT tools with RSA key recovery and web interface"
 readme = "README.md"
 authors = [
     { name = "wmymz", email = "wmymz@icloud.com" }
 ]
-requires-python = ">=3.7,<3.14"
+requires-python = ">=3.8,<3.14"
 dependencies = [
     "crypto-plus>=1.0.6",
     "gmpy2>=2.2.1",
+    "fastapi>=0.104.0",
+    "uvicorn>=0.24.0",
+    "pydantic>=2.0.0",
+    "python-multipart>=0.0.6",
 ]
 
 [project.scripts]
 ajwt = "ajwt.jwt_tool:main"
 ajwt_rsa = "ajwt.rsa_tool:main"
+ajwt_web = "ajwt.web_app:main"
 
 [build-system]
 requires = ["uv_build>=0.8.3,<0.9.0"]
