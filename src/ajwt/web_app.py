@@ -307,7 +307,8 @@ async def index():
                 <div class="form-group">
                     <label for="keySize">密钥长度 (bits)</label>
                     <select id="keySize">
-                        <option value="2048">2048</option>
+                        <option value="1024">1024</option>
+                        <option value="2048" selected>2048</option>
                         <option value="3072">3072</option>
                         <option value="4096">4096</option>
                     </select>
@@ -626,6 +627,15 @@ async def index():
                     
                     if (data.decoded_info) {
                         html += '<br><strong>解码信息:</strong><br>';
+                        
+                        // Display key info separately if present
+                        if (data.decoded_info.key_info) {
+                            html += '<div style="margin: 10px 0; padding: 10px; background: #e7f3ff; border-radius: 4px;">';
+                            html += '<strong>🔑 密钥信息:</strong><br>';
+                            html += `  模数长度: ${data.decoded_info.key_info.modulus_bits} bits (${data.decoded_info.key_info.modulus_bytes} bytes)`;
+                            html += '</div>';
+                        }
+                        
                         html += `<pre>${JSON.stringify(data.decoded_info, null, 2)}</pre>`;
                     }
                     
@@ -670,8 +680,8 @@ async def index():
 async def generate_keypair(key_size: int = 2048):
     """Generate RSA key pair."""
     try:
-        if key_size not in [2048, 3072, 4096]:
-            raise HTTPException(status_code=400, detail="Invalid key size. Must be 2048, 3072, or 4096")
+        if key_size not in [1024, 2048, 3072, 4096]:
+            raise HTTPException(status_code=400, detail="Invalid key size. Must be 1024, 2048, 3072, or 4096")
         
         # Generate RSA key pair
         key = RSA.generate(key_size)
@@ -843,6 +853,19 @@ async def validate_jwt(request: JWTValidateRequest):
             try:
                 # Load public key
                 rsa_key = CryptoPlus.loads(request.public_key)
+                
+                # Extract key information
+                modulus = rsa_key.public_key.n
+                key_bit_length = modulus.bit_length()
+                
+                # Add key info to decoded_info
+                if not decoded_info:
+                    decoded_info = {}
+                decoded_info['key_info'] = {
+                    'modulus_bits': key_bit_length,
+                    'modulus_bytes': (key_bit_length + 7) // 8
+                }
+                response.decoded_info = decoded_info
                 
                 # Get hash algorithm and signature scheme
                 hash_class, sig_scheme = SUPPORTED_ALGORITHMS[algorithm]
