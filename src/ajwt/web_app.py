@@ -30,6 +30,11 @@ SUPPORTED_ALGORITHMS = {
 }
 
 
+class KeyPairRequest(BaseModel):
+    """Request model for key pair generation."""
+    key_size: int = Field(default=2048, description="RSA key size in bits")
+
+
 class KeyPairResponse(BaseModel):
     """Response model for key pair generation."""
     private_key: str
@@ -677,9 +682,10 @@ async def index():
 
 
 @app.post("/api/generate-keypair", response_model=KeyPairResponse)
-async def generate_keypair(key_size: int = 2048):
+async def generate_keypair(request: KeyPairRequest):
     """Generate RSA key pair."""
     try:
+        key_size = request.key_size
         if key_size not in [1024, 2048, 3072, 4096]:
             raise HTTPException(status_code=400, detail="Invalid key size. Must be 1024, 2048, 3072, or 4096")
         
